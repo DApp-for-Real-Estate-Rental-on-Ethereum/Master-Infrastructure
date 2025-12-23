@@ -1,0 +1,80 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Orchestrate Builds') {
+            parallel {
+                stage('User Service') {
+                    steps {
+                        build job: 'real-estate-user-service', wait: true
+                    }
+                }
+                stage('Property Service') {
+                    steps {
+                        build job: 'real-estate-property-service', wait: true
+                    }
+                }
+                stage('Booking Service') {
+                    steps {
+                        build job: 'real-estate-booking-service', wait: true
+                    }
+                }
+                stage('Payment Service') {
+                    steps {
+                        build job: 'real-estate-payment-service', wait: true
+                    }
+                }
+                stage('Notification Service') {
+                    steps {
+                        build job: 'real-estate-notification-service', wait: true
+                    }
+                }
+                stage('Reclamation Service') {
+                    steps {
+                        build job: 'real-estate-reclamation-service', wait: true
+                    }
+                }
+                stage('Blockchain Service') {
+                    steps {
+                        build job: 'real-estate-blockchain-service', wait: true
+                    }
+                }
+                stage('API Gateway') {
+                    steps {
+                        // Gateway often depends on others, but for Docker build it's independent.
+                        build job: 'real-estate-api-gateway', wait: true
+                    }
+                }
+                stage('AI Service') {
+                    steps {
+                        build job: 'morocco-pricing-api', wait: true
+                    }
+                }
+                stage('Frontend') {
+                    steps {
+                        build job: 'real-estate-frontend', wait: true
+                    }
+                }
+            }
+        }
+
+        stage('System Deployment') {
+            steps {
+                script {
+                    echo "All services built successfully."
+                    echo "Triggering deployment... (This step can be connected to a deployment job or run docker-compose)"
+                    // Example: build job: 'deploy-to-prod', wait: false
+                }
+            }
+        }
+    }
+    
+    post {
+        success {
+            echo "Master Release Pipeline successfully built all components! 🚀"
+        }
+        failure {
+            echo "One or more component builds failed. Check the specific stage logs. ❌"
+        }
+    }
+}

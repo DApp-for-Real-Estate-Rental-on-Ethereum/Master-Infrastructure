@@ -27,8 +27,8 @@ spec:
     spec:
       containers:
         - name: booking-service
-          image: medgm/real-estate-booking-service:urls-fix
-          imagePullPolicy: IfNotPresent
+          image: medgm/real-estate-booking-service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8083
           env:

@@ -27,8 +27,8 @@ spec:
     spec:
       containers:
         - name: reclamation-service
-          image: medgm/real-estate-reclamation-service:final-fix
-          imagePullPolicy: IfNotPresent
+          image: medgm/real-estate-reclamation-service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8091
           env:

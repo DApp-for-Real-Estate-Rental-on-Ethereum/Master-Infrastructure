@@ -27,8 +27,8 @@ spec:
     spec:
       containers:
         - name: user-service
-          image: medgm/real-estate-user-service:fixed
-          imagePullPolicy: IfNotPresent
+          image: medgm/real-estate-user-service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8082
           env:

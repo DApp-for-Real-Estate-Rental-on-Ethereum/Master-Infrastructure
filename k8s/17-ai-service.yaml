@@ -29,8 +29,8 @@ spec:
     spec:
       containers:
         - name: pricing-api
-          image: medgm/morocco-pricing-api:fixed
-          imagePullPolicy: IfNotPresent
+          image: medgm/morocco-pricing-api:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8000
           env:

@@ -27,8 +27,8 @@ spec:
     spec:
       containers:
         - name: payment-service
-          image: medgm/real-estate-payment-service:no-cors
-          imagePullPolicy: IfNotPresent
+          image: medgm/real-estate-payment-service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8085
           env:

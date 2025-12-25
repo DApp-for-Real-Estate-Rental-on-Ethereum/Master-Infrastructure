@@ -29,8 +29,8 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: medgm/real-estate-frontend:reclamations-fix
-          imagePullPolicy: IfNotPresent
+          image: medgm/real-estate-frontend:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 3000
           env:

@@ -27,8 +27,8 @@ spec:
     spec:
       containers:
         - name: property-service
-          image: medgm/real-estate-property-service:pricing-fix
-          imagePullPolicy: IfNotPresent
+          image: medgm/real-estate-property-service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8081
           env:

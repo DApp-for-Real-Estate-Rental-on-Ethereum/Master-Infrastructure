@@ -29,8 +29,8 @@ spec:
     spec:
       containers:
         - name: api-gateway
-          image: medgm/real-estate-api-gateway:v8
-          imagePullPolicy: IfNotPresent
+          image: medgm/real-estate-api-gateway:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8090
           env: # Gateway needs to find services via K8s DNS

@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: reclamation-service
+  namespace: derent
+spec:
+  ports:
+    - port: 8091
+      targetPort: 8091
+  selector:
+    app: reclamation-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reclamation-service
+  namespace: derent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reclamation-service
+  template:
+    metadata:
+      labels:
+        app: reclamation-service
+    spec:
+      containers:
+        - name: reclamation-service
+          image: medgm/real-estate-reclamation-service:final-fix
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8091
+          env:
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: derent-config
+                  key: spring-datasource-url
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: derent-config
+                  key: postgres-user
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: derent-secrets
+                  key: postgres-password

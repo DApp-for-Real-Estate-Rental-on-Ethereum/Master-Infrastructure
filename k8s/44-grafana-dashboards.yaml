@@ -1,0 +1,229 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-provider
+  namespace: derent
+data:
+  dashboard-provider.yaml: |
+    apiVersion: 1
+    providers:
+    - name: 'default'
+      orgId: 1
+      folder: ''
+      type: file
+      disableDeletion: false
+      editable: true
+      options:
+        path: /var/lib/grafana/dashboards
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards-json
+  namespace: derent
+data:
+  springboot-dashboard.json: |-
+    {
+      "annotations": {
+        "list": [
+          {
+            "builtIn": 1,
+            "datasource": "-- Grafana --",
+            "enable": true,
+            "hide": true,
+            "iconColor": "rgba(0, 211, 255, 1)",
+            "name": "Annotations & Alerts",
+            "type": "dashboard"
+          }
+        ]
+      },
+      "editable": true,
+      "gnetId": null,
+      "graphTooltip": 0,
+      "id": null,
+      "links": [],
+      "panels": [
+        {
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 0,
+            "y": 0
+          },
+          "id": 2,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "7.5.4",
+          "targets": [
+            {
+              "expr": "count(up{job=\"spring-actuator\"})",
+              "interval": "",
+              "legendFormat": "",
+              "refId": "A"
+            }
+          ],
+          "title": "Microservices UP",
+          "type": "stat"
+        },
+        {
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "align": "auto",
+                "displayMode": "auto"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 4
+          },
+          "id": 4,
+          "options": {
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true
+          },
+          "pluginVersion": "7.5.4",
+          "targets": [
+            {
+              "expr": "sum(jvm_memory_used_bytes{area=\"heap\"}) by (application)",
+              "interval": "",
+              "legendFormat": "{{application}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Heap Memory Usage",
+          "type": "timeseries"
+        },
+         {
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "align": "auto",
+                "displayMode": "auto"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 4
+          },
+          "id": 5,
+          "options": {
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true
+          },
+          "pluginVersion": "7.5.4",
+          "targets": [
+            {
+              "expr": "rate(http_server_requests_seconds_count[1m])",
+              "interval": "",
+              "legendFormat": "{{application}} - {{uri}}",
+              "refId": "A"
+            }
+          ],
+          "title": "HTTP Request Rate",
+          "type": "timeseries"
+        }
+      ],
+      "schemaVersion": 27,
+      "style": "dark",
+      "tags": [],
+      "templating": {
+        "list": []
+      },
+      "time": {
+        "from": "now-15m",
+        "to": "now"
+      },
+      "timepicker": {},
+      "timezone": "",
+      "title": "Derent Microservices Overview",
+      "uid": "derent-overview",
+      "version": 1
+    }

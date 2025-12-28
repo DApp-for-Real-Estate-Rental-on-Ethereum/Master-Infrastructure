@@ -52,7 +52,16 @@ pipeline {
                 }
                 stage('Frontend') {
                     steps {
-                        build job: 'real-estate-frontend', wait: true
+                        script {
+                            def minikubeIp = sh(script: "minikube ip", returnStdout: true).trim()
+                            def nodePort = sh(script: "kubectl get svc api-gateway -n derent -o jsonpath='{.spec.ports[0].nodePort}'", returnStdout: true).trim()
+                            def gatewayUrl = "http://${minikubeIp}:${nodePort}"
+                            echo "Detected Gateway URL for Frontend: ${gatewayUrl}"
+                            
+                            build job: 'real-estate-frontend', 
+                                  parameters: [string(name: 'GATEWAY_URL', value: gatewayUrl)],
+                                  wait: true
+                        }
                     }
                 }
             }

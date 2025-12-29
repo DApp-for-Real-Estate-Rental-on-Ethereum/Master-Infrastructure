@@ -32,7 +32,7 @@ spec:
       containers:
         - name: reclamation-service
           image: medgm/real-estate-reclamation-service:latest
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8091
           env:
@@ -51,3 +51,13 @@ spec:
                 secretKeyRef:
                   name: derent-secrets
                   key: postgres-password
+            - name: SPRING_RABBITMQ_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: derent-config
+                  key: rabbitmq-host
+            - name: SPRING_RABBITMQ_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: derent-config
+                  key: rabbitmq-port

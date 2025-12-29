@@ -32,7 +32,7 @@ spec:
       containers:
         - name: payment-service
           image: medgm/real-estate-payment-service:latest
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8085
           env:

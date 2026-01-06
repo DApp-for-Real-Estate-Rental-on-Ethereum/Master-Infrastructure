@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: derent-config
+  namespace: derent
+data:
+  postgres-db: "derentdb"
+  postgres-user: "postgres"
+  spring-datasource-url: "jdbc:postgresql://postgres-service:5432/derentdb"
+  rabbitmq-host: "rabbitmq-service"
+  rabbitmq-port: "5672"
+  # Service URLs for Minikube Internal DNS
+  user-service-url: "http://user-service:8082"
+  property-service-url: "http://property-service:8081"
+  booking-service-url: "http://booking-service:8083"
+  payment-service-url: "http://payment-service:8085"
+  reclamation-service-url: "http://reclamation-service:8086"
+  notification-service-url: "http://notification-service:8084"
+  ai-service-url: "http://pricing-api:8000"
+

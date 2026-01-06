@@ -1,0 +1,90 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-service
+  namespace: derent
+spec:
+  ports:
+    - port: 8085
+      targetPort: 8085
+  selector:
+    app: payment-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-service
+  namespace: derent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payment-service
+  template:
+    metadata:
+      labels:
+        app: payment-service
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8085"
+    spec:
+      containers:
+        - name: payment-service
+          image: medgm/real-estate-payment-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8085
+          env:
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: derent-config
+                  key: spring-datasource-url
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: derent-config
+                  key: postgres-user
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: derent-secrets
+                  key: postgres-password
+            - name: PROPERTY_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: derent-config
+                  key: property-service-url
+            - name: BOOKING_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: derent-config
+                  key: booking-service-url
+            - name: APP_WEB3_RPC_URL
+              value: "http://blockchain-service:8545"
+            - name: APP_WEB3_CONTRACT_ADDRESS
+              value: "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+            - name: APP_WEB3_CHAIN_ID
+              value: "31337"
+            - name: WEB3_PRIVATE_KEY
+              value: "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "200m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8085
+            initialDelaySeconds: 60
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8085
+            initialDelaySeconds: 30
+            periodSeconds: 10

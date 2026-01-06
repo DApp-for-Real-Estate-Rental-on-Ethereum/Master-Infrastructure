@@ -1,0 +1,87 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: pricing-api
+  namespace: derent
+spec:
+  type: NodePort
+  ports:
+    - port: 8000
+      targetPort: 8000
+      nodePort: 30002 # Fixed NodePort for easier access
+  selector:
+    app: pricing-api
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pricing-api
+  namespace: derent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pricing-api
+  template:
+    metadata:
+      labels:
+        app: pricing-api
+    spec:
+      containers:
+        - name: pricing-api
+          image: medgm/morocco-pricing-api:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          env:
+            - name: DB_HOST
+              value: "postgres-service"
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: derent-config
+                  key: postgres-db
+            - name: DB_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: derent-config
+                  key: postgres-user
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: derent-secrets
+                  key: postgres-password
+            - name: USER_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: derent-config
+                  key: user-service-url
+            - name: BOOKING_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: derent-config
+                  key: booking-service-url
+            - name: RECLAMATION_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: derent-config
+                  key: reclamation-service-url
+            - name: PAYMENT_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: derent-config
+                  key: payment-service-url
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5

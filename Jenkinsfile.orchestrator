@@ -1,12 +1,22 @@
 pipeline {
     agent any
 
+    parameters {
+        choice(name: 'DEPLOY_TARGET', choices: ['none', 'minikube', 'aws-staging'], description: 'Where to deploy after successful build')
+        booleanParam(name: 'SKIP_TESTS', defaultValue: false, description: 'Skip unit tests for faster build')
+    }
+
+    environment {
+        // Global version tag to ensure all services share the same version identifier
+        GLOBAL_BUILD_TAG = "release-${BUILD_NUMBER}-${GIT_COMMIT[0..7]}"
+    }
+
     stages {
         stage('Orchestrate Builds') {
             parallel {
                 stage('User Service') {
                     steps {
-                        build job: 'user-service', wait: true
+                        build job: 'user-service', wait: true, parameters: [booleanParam(name: 'SKIP_TESTS', value: params.SKIP_TESTS)]
                     }
                 }
                 stage('Property Service') {
@@ -41,7 +51,6 @@ pipeline {
                 }
                 stage('API Gateway') {
                     steps {
-                        // Gateway often depends on others, but for Docker build it's independent.
                         build job: 'API-Gateway', wait: true
                     }
                 }
@@ -58,12 +67,41 @@ pipeline {
             }
         }
 
-        stage('System Deployment') {
+        stage('Deploy to Minikube') {
+            when {
+                expression { params.DEPLOY_TARGET == 'minikube' }
+            }
             steps {
                 script {
-                    echo "All services built successfully."
-                    echo "Triggering deployment... (This step can be connected to a deployment job or run docker-compose)"
-                    // Example: build job: 'deploy-to-prod', wait: false
+                    echo "Starting Deployment to Minikube..."
+                    dir('Master/k8s-minikube') {
+                        sh '''
+                            echo "Applying Base Configuration..."
+                            kubectl apply -f 00-namespace.yaml
+                            kubectl apply -f 01-secrets.yaml
+                            kubectl apply -f 02-configmaps.yaml
+
+                            echo "Applying Infrastructure..."
+                            kubectl apply -f 03-postgres.yaml
+                            kubectl apply -f 04-rabbitmq.yaml
+                            kubectl apply -f 16-blockchain-service.yaml
+
+                            echo "Applying Backend Services..."
+                            kubectl apply -f 10-user-service.yaml
+                            kubectl apply -f 11-property-service.yaml
+                            kubectl apply -f 12-booking-service.yaml
+                            kubectl apply -f 13-payment-service.yaml
+                            kubectl apply -f 14-notification-service.yaml
+                            kubectl apply -f 15-reclamation-service.yaml
+
+                            echo "Applying AI Service..."
+                            kubectl apply -f 17-ai-service.yaml
+
+                            echo "Applying Gateway and Frontend..."
+                            kubectl apply -f 20-api-gateway.yaml
+                            kubectl apply -f 30-frontend.yaml
+                        '''
+                    }
                 }
             }
         }
@@ -71,10 +109,10 @@ pipeline {
     
     post {
         success {
-            echo "Master Release Pipeline successfully built all components! 🚀"
+            echo "Master Release Pipeline successfully completed! 🚀 target: ${params.DEPLOY_TARGET}"
         }
         failure {
-            echo "One or more component builds failed. Check the specific stage logs. ❌"
+            echo "Pipeline failed. Check component build logs. ❌"
         }
     }
 }

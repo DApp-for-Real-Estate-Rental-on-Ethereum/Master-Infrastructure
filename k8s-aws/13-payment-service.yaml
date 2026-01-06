@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-service
+  namespace: derent
+spec:
+  ports:
+    - port: 8085
+      targetPort: 8085
+  selector:
+    app: payment-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-service
+  namespace: derent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payment-service
+  template:
+    metadata:
+      labels:
+        app: payment-service
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8085"
+    spec:
+      containers:
+        - name: payment-service
+          image: 321421555934.dkr.ecr.us-east-1.amazonaws.com/payment-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8085
+          env:
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: derent-config
+                  key: spring-datasource-url
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: derent-config
+                  key: postgres-user
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: derent-secrets
+                  key: postgres-password

@@ -1,0 +1,87 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: booking-service
+  namespace: derent
+spec:
+  ports:
+    - port: 8083
+      targetPort: 8083
+  selector:
+    app: booking-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: booking-service
+  namespace: derent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: booking-service
+  template:
+    metadata:
+      labels:
+        app: booking-service
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8083"
+    spec:
+      containers:
+        - name: booking-service
+          image: medgm/real-estate-booking-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8083
+          env:
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: derent-config
+                  key: spring-datasource-url
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: derent-config
+                  key: postgres-user
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: derent-secrets
+                  key: postgres-password
+            - name: SPRING_RABBITMQ_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: derent-config
+                  key: rabbitmq-host
+            - name: PROPERTY_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: derent-config
+                  key: property-service-url
+            - name: USER_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: derent-config
+                  key: user-service-url
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "200m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8083
+            initialDelaySeconds: 60
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8083
+            initialDelaySeconds: 30
+            periodSeconds: 10

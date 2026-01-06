@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: derent
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 3000
+      targetPort: 3000
+  selector:
+    app: frontend
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: derent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: medgm/real-estate-frontend:v6
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NEXT_PUBLIC_API_BASE_URL
+              value: "http://192.168.49.2:30090" # Public NodePort URL for client-side API calls
+            - name: NEXT_PUBLIC_GATEWAY_URL
+              value: "http://192.168.49.2:30090" # Public URL for client-side
+            - name: NEXT_PUBLIC_USE_GATEWAY
+              value: "true"
+            - name: AI_API_URL # Internal URL for server-side proxy
+              value: "http://pricing-api:8000"
+            # HTTPS endpoint for MetaMask (Cloudflare Tunnel)
+            # NOTE: For production, replace with your own HTTPS endpoint
+            - name: NEXT_PUBLIC_BLOCKCHAIN_RPC_URL
+              value: "http://localhost:8545"
+

@@ -1,0 +1,107 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: property-service
+  namespace: derent
+spec:
+  ports:
+    - port: 8081
+      targetPort: 8081
+  selector:
+    app: property-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: property-service
+  namespace: derent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: property-service
+  template:
+    metadata:
+      labels:
+        app: property-service
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8081"
+    spec:
+      containers:
+        - name: property-service
+          image: medgm/real-estate-property-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8081
+          env:
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: derent-config
+                  key: spring-datasource-url
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: derent-config
+                  key: postgres-user
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: derent-secrets
+                  key: postgres-password
+            - name: AWS_ACCESS_KEY_ID
+              value: "minikube-dummy-key"
+            - name: AWS_SECRET_ACCESS_KEY
+              value: "minikube-dummy-secret"
+            # Legacy/Properties support
+            - name: AWS_KEY
+              value: "minikube-dummy-key"
+            - name: AWS_SECRET_KEY
+              value: "minikube-dummy-secret"
+            - name: AWS_ACCESS_KEY
+              value: "minikube-dummy-key"
+            - name: AWS_REGION
+              value: "us-east-1"
+            - name: AWS_BUCKET_NAME
+              value: "derent-bucket-local"
+            - name: SPRING_RABBITMQ_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: derent-config
+                  key: rabbitmq-host
+            - name: PRICING_API_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: derent-config
+                  key: ai-service-url
+            - name: USER_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: derent-config
+                  key: user-service-url
+            - name: BOOKING_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: derent-config
+                  key: booking-service-url
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "200m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8081
+            initialDelaySeconds: 60
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8081
+            initialDelaySeconds: 30
+            periodSeconds: 10

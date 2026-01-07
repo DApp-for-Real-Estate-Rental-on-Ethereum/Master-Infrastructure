@@ -34,15 +34,15 @@ spec:
             - containerPort: 3000
           env:
             - name: NEXT_PUBLIC_API_BASE_URL
-              value: "http://a6c7e906ec49c4fe3ab7ddce24ec807a-2079119961.us-east-1.elb.amazonaws.com:8090"
+              value: "https://d2ukdap3e0lir5.cloudfront.net"
             - name: NEXT_PUBLIC_GATEWAY_URL
-              value: "http://a6c7e906ec49c4fe3ab7ddce24ec807a-2079119961.us-east-1.elb.amazonaws.com:8090"
+              value: "https://d2ukdap3e0lir5.cloudfront.net"
             - name: NEXT_PUBLIC_USE_GATEWAY
               value: "true"
             - name: AI_API_URL
-              value: "http://a6c7e906ec49c4fe3ab7ddce24ec807a-2079119961.us-east-1.elb.amazonaws.com:8090"
+              value: "https://d2ukdap3e0lir5.cloudfront.net"
             # HTTPS endpoint for MetaMask (Cloudflare Tunnel)
             # NOTE: For production, replace with your own HTTPS endpoint
             - name: NEXT_PUBLIC_BLOCKCHAIN_RPC_URL
-              value: "https://arizona-divorce-widescreen-facial.trycloudflare.com"
+              value: "https://d1f19dpygrw2di.cloudfront.net"
 
